@@ -1,31 +1,36 @@
 const db=require('../utils/db-connection');
+const {Op}=require('sequelize');
+const Bus=require('../models/buses');
 
-const addBusEntry=(req,res)=>{
-  const {busNumber,totalSeats,availableSeats}=req.body;
-  const addBusQuery='INSERT INTO Bus (busNumber,totalSeats,availableSeats) VALUES (?,?,?)';
-  db.execute(addBusQuery,[busNumber,totalSeats,availableSeats],(err)=>{
-    if(err){
-      console.log(err.message);
-      res.status(500).send(err.message);
-      return;
-    }
-    console.log('Added a bus details');
-    res.status(200).send(`Bus added successfully bus number ${busNumber} `);
-  })
+const addBusEntry=async (req,res)=>{
+  try {
+    const {busNumber,totalSeats,availableSeats}=req.body;
+    const bus= await Bus.create({
+      busNumber:busNumber,
+      totalSeats:totalSeats,
+      availableSeats:availableSeats
+    })
+    res.status(200).send('Bus details has been created');
+  } catch (error) {
+    res.status(500).send('Unable to make entry');
+  }
+  
 }
 
-const getBusEntry=(req,res)=>{
-  const seats = parseInt(req.params.seats);
-  const getBusEntry='SELECT *FROM Bus WHERE availableSeats>?';
-  db.execute(getBusEntry,[seats],(err,result)=>{
-    if(err){
-      console.log(err.message);
-      res.status(500).send(err.message);
-      return;
-    }
-    console.log("Retrieved all buses with more than the specified no.of available seats");
-    res.status(200).send(result);
-  })
+const getBusEntry=async (req,res)=>{
+   try {
+    const seats = parseInt(req.params.seats);
+    const busQuery=await Bus.findAll({
+      where:{
+        availableSeats:{
+          [Op.gt]:seats
+        }
+      }
+    });
+    res.status(200).json(busQuery);
+   } catch (error) {
+    res.status(500).send('Unable to get');
+   }
 }
 
 module.exports={

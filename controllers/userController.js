@@ -1,34 +1,29 @@
 const db=require('../utils/db-connection');
+const User=require('../models/user');
 
-const addEntry=(req,res)=>{
-  const {name,email}=req.body;
-  const addQuery='INSERT INTO user (name,email) VALUES (?,?)';
-  db.execute(addQuery,[name,email],(err)=>{
-    if(err){
-      console.log(err.message);
-      res.status(500).send(err.message);
-      return;
-    }
-    console.log("Added a new user");
-    res.status(200).send(`User with name ${name} successfully added`);
-  })
+const addEntry=async (req,res)=>{
+  try {
+    const {name,email}=req.body;
+    const user=await User.create({
+      name:name,
+      email:email
+    })
+    res.status(200).send(`User with name ${name} is created`);
+  } catch (error) {
+    res.status(500).send('Unable to make entry');
+  } 
 }
 
-const getQuery=(req,res)=>{
-  const getQuery='SELECT * FROM user';
-  db.execute(getQuery,(err,result)=>{
-    if(err){
-      console.log(err.message);
-      res.status(500).send(err.message);
-      return;
-    }
-    console.log("Retrieve all users from the database");
-    res.status(200).send(result);
-  })
-
+const getEntry=async (req,res)=>{
+   try {
+    const getQuery=await User.findAll();
+    res.status(200).json(getQuery);
+   } catch (error) {
+    res.status(500).send('Unable to get');
+   }
 }
 
 module.exports={
   addEntry,
-  getQuery
+  getEntry
 }

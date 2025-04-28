@@ -4,6 +4,6 @@ const router=express.Router();
 
 router.post('/users',userController.addEntry);
 
-router.get('/users',userController.getQuery)
+router.get('/users',userController.getEntry)
 
 module.exports=router;
